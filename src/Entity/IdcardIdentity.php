@@ -155,4 +155,9 @@ class IdcardIdentity implements IdentityInterface
             'updateTime' => $this->getUpdateTime()?->format('Y-m-d H:i:s'),
         ]);
     }
+
+    public function getAccounts(): array
+    {
+        return [];
+    }
 }
