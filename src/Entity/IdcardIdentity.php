@@ -15,14 +15,14 @@ use Tourze\EasyAdmin\Attribute\Column\ExportColumn;
 use Tourze\EasyAdmin\Attribute\Column\ListColumn;
 use Tourze\EasyAdmin\Attribute\Filter\Filterable;
 use Tourze\EasyAdmin\Attribute\Permission\AsPermission;
-use Tourze\UserIDBundle\Contracts\UserIdentityInterface;
+use Tourze\UserIDBundle\Contracts\IdentityInterface;
 use Tourze\UserIDBundle\Model\Identity;
 use Tourze\UserIDIdcardBundle\Repository\IdcardIdentityRepository;
 
 #[AsPermission(title: '身份证')]
 #[ORM\Entity(repositoryClass: IdcardIdentityRepository::class)]
 #[ORM\Table(name: 'ims_user_identity_idcard', options: ['comment' => '身份证'])]
-class IdcardIdentity implements UserIdentityInterface
+class IdcardIdentity implements IdentityInterface
 {
     public const IDENTITY_TYPE = 'idcard';
 
@@ -136,11 +136,6 @@ class IdcardIdentity implements UserIdentityInterface
     public function getUpdateTime(): ?\DateTimeInterface
     {
         return $this->updateTime;
-    }
-
-    public function getBelongUser(): ?UserInterface
-    {
-        return $this->getUser();
     }
 
     public function getIdentityValue(): string

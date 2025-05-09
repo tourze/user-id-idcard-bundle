@@ -5,7 +5,7 @@ namespace Tourze\UserIDIdcardBundle\Service;
 use Symfony\Component\DependencyInjection\Attribute\AsDecorator;
 use Symfony\Component\DependencyInjection\Attribute\AutowireDecorated;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Tourze\UserIDBundle\Contracts\UserIdentityInterface;
+use Tourze\UserIDBundle\Contracts\IdentityInterface;
 use Tourze\UserIDBundle\Service\UserIdentityService;
 use Tourze\UserIDIdcardBundle\Entity\IdcardIdentity;
 use Tourze\UserIDIdcardBundle\Repository\IdcardIdentityRepository;
@@ -19,7 +19,7 @@ class UserIdentityIdcardService implements UserIdentityService
     ) {
     }
 
-    public function findByType(string $type, string $value): ?UserIdentityInterface
+    public function findByType(string $type, string $value): ?IdentityInterface
     {
         // 身份证
         if (IdcardIdentity::IDENTITY_TYPE === $type) {
