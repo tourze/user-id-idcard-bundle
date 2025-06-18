@@ -119,7 +119,7 @@ class IdcardIdentityTest extends TestCase
     public function test_setAndGetCreateTime_withValidValue()
     {
         $entity = new IdcardIdentity();
-        $dateTime = new \DateTime();
+        $dateTime = new \DateTimeImmutable();
 
         $entity->setCreateTime($dateTime);
         
@@ -144,7 +144,7 @@ class IdcardIdentityTest extends TestCase
     public function test_setAndGetUpdateTime_withValidValue()
     {
         $entity = new IdcardIdentity();
-        $dateTime = new \DateTime();
+        $dateTime = new \DateTimeImmutable();
 
         $entity->setUpdateTime($dateTime);
         
@@ -194,7 +194,7 @@ class IdcardIdentityTest extends TestCase
         $entity = new IdcardIdentity();
         $idcard = '110101199001011234';
         $id = '123456';
-        $now = new \DateTime('2023-01-01 12:00:00');
+        $now = new \DateTimeImmutable('2023-01-01 12:00:00');
 
         // 使用反射设置 id 属性
         $reflectionClass = new \ReflectionClass($entity);
@@ -217,7 +217,6 @@ class IdcardIdentityTest extends TestCase
         $this->assertSame($idcard, $items[0]->getIdentityValue());
         
         $extra = $items[0]->getExtra();
-        $this->assertIsArray($extra);
         $this->assertArrayHasKey('createTime', $extra);
         $this->assertArrayHasKey('updateTime', $extra);
         $this->assertSame('2023-01-01 12:00:00', $extra['createTime']);
