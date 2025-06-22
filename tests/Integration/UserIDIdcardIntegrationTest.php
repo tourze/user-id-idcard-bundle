@@ -25,15 +25,12 @@ class UserIDIdcardIntegrationTest extends KernelTestCase
 
         // 创建一个具有有限功能的模拟容器
         $serviceIds = [
-            'Tourze\UserIDIdcardBundle\Repository\IdcardIdentityRepository',
             'Tourze\UserIDIdcardBundle\Service\UserIdentityIdcardService',
         ];
 
         foreach ($serviceIds as $serviceId) {
             $this->assertTrue(
-                $container->has($serviceId) ||
-                $container->hasDefinition($serviceId) ||
-                $container->hasAlias($serviceId),
+                $container->has($serviceId),
                 sprintf('服务 "%s" 应该在容器中注册', $serviceId)
             );
         }

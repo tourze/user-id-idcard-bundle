@@ -23,7 +23,7 @@ class UserIdentityIdcardService implements UserIdentityService
     {
         // 身份证
         if (IdcardIdentity::IDENTITY_TYPE === $type) {
-            $result = $this->idcardIdentityRepository?->findOneBy(['idcard' => $value]);
+            $result = $this->idcardIdentityRepository->findOneBy(['idcard' => $value]);
             if ((bool) $result) {
                 return $result;
             }

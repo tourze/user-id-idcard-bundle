@@ -7,17 +7,17 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Tourze\DoctrineSnowflakeBundle\Service\SnowflakeIdGenerator;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
-use Tourze\DoctrineUserBundle\Attribute\CreatedByColumn;
-use Tourze\DoctrineUserBundle\Attribute\UpdatedByColumn;
+use Tourze\DoctrineUserBundle\Traits\BlameableAware;
 use Tourze\UserIDBundle\Contracts\IdentityInterface;
 use Tourze\UserIDBundle\Model\Identity;
 use Tourze\UserIDIdcardBundle\Repository\IdcardIdentityRepository;
 
 #[ORM\Entity(repositoryClass: IdcardIdentityRepository::class)]
 #[ORM\Table(name: 'ims_user_identity_idcard', options: ['comment' => '身份证'])]
-class IdcardIdentity implements IdentityInterface
+class IdcardIdentity implements IdentityInterface, \Stringable
 {
     use TimestampableAware;
+    use BlameableAware;
     public const IDENTITY_TYPE = 'idcard';
 
     #[ORM\Id]
@@ -26,16 +26,11 @@ class IdcardIdentity implements IdentityInterface
     #[ORM\Column(type: Types::BIGINT, nullable: false, options: ['comment' => 'ID'])]
     private ?string $id = null;
 
+    #[ORM\Column(type: Types::STRING, length: 18, nullable: false, options: ['comment' => '身份证号'])]
     private string $idcard;
 
     #[ORM\ManyToOne]
     private ?UserInterface $user = null;
-
-    #[CreatedByColumn]
-    private ?string $createdBy = null;
-
-    #[UpdatedByColumn]
-    private ?string $updatedBy = null;
 
     public function getId(): ?string
     {
@@ -66,29 +61,7 @@ class IdcardIdentity implements IdentityInterface
         return $this;
     }
 
-    public function setCreatedBy(?string $createdBy): self
-    {
-        $this->createdBy = $createdBy;
-
-        return $this;
-    }
-
-    public function getCreatedBy(): ?string
-    {
-        return $this->createdBy;
-    }
-
-    public function setUpdatedBy(?string $updatedBy): self
-    {
-        $this->updatedBy = $updatedBy;
-
-        return $this;
-    }
-
-    public function getUpdatedBy(): ?string
-    {
-        return $this->updatedBy;
-    }public function getIdentityValue(): string
+    public function getIdentityValue(): string
     {
         return $this->getIdcard();
     }
@@ -109,5 +82,10 @@ class IdcardIdentity implements IdentityInterface
     public function getAccounts(): array
     {
         return [];
+    }
+
+    public function __toString(): string
+    {
+        return $this->getIdcard();
     }
 }
