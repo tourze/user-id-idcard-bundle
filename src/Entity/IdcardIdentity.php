@@ -5,7 +5,7 @@ namespace Tourze\UserIDIdcardBundle\Entity;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Tourze\DoctrineSnowflakeBundle\Service\SnowflakeIdGenerator;
+use Tourze\DoctrineSnowflakeBundle\Traits\SnowflakeKeyAware;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\DoctrineUserBundle\Traits\BlameableAware;
 use Tourze\UserIDBundle\Contracts\IdentityInterface;
@@ -16,26 +16,16 @@ use Tourze\UserIDIdcardBundle\Repository\IdcardIdentityRepository;
 #[ORM\Table(name: 'ims_user_identity_idcard', options: ['comment' => '身份证'])]
 class IdcardIdentity implements IdentityInterface, \Stringable
 {
+    use SnowflakeKeyAware;
     use TimestampableAware;
     use BlameableAware;
     public const IDENTITY_TYPE = 'idcard';
-
-    #[ORM\Id]
-    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
-    #[ORM\CustomIdGenerator(SnowflakeIdGenerator::class)]
-    #[ORM\Column(type: Types::BIGINT, nullable: false, options: ['comment' => 'ID'])]
-    private ?string $id = null;
 
     #[ORM\Column(type: Types::STRING, length: 18, nullable: false, options: ['comment' => '身份证号'])]
     private string $idcard;
 
     #[ORM\ManyToOne]
     private ?UserInterface $user = null;
-
-    public function getId(): ?string
-    {
-        return $this->id;
-    }
 
     public function getIdcard(): string
     {
