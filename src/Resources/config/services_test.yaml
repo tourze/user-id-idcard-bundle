@@ -5,12 +5,5 @@ services:
     autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
     public: true
 
-  Tourze\UserIDIdcardBundle\Repository\:
-    resource: '../../Repository/'
-
-  Tourze\UserIDIdcardBundle\Service\:
-    resource: '../../Service/'
-
-  Tourze\UserIDIdcardBundle\Controller\:
-    resource: '../../Controller/'
-    tags: ['controller.service_arguments']
+  Tourze\UserIDIdcardBundle\DataFixtures\:
+    resource: '../../DataFixtures/'

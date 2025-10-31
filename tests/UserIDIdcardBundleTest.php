@@ -1,20 +1,19 @@
 <?php
 
-namespace Tourze\UserIDIdcardBundle\Tests;
+declare(strict_types=1);
 
-use PHPUnit\Framework\TestCase;
-use Symfony\Component\HttpKernel\Bundle\Bundle;
+namespace UserIdIdcardBundle\Tests;
+
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
+use Tourze\PHPUnitSymfonyKernelTest\AbstractBundleTestCase;
 use Tourze\UserIDIdcardBundle\UserIDIdcardBundle;
 
-class UserIDIdcardBundleTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(UserIDIdcardBundle::class)]
+#[RunTestsInSeparateProcesses]
+final class UserIDIdcardBundleTest extends AbstractBundleTestCase
 {
-    /**
-     * 测试 UserIDIdcardBundle 类正确继承 Bundle 类
-     */
-    public function test_inheritance_extendsBundleClass()
-    {
-        $bundle = new UserIDIdcardBundle();
-
-        $this->assertInstanceOf(Bundle::class, $bundle);
-    }
 }

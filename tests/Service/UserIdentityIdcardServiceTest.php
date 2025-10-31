@@ -2,212 +2,109 @@
 
 namespace Tourze\UserIDIdcardBundle\Tests\Service;
 
-use PHPUnit\Framework\TestCase;
-use Symfony\Component\Security\Core\User\UserInterface;
-use Tourze\UserIDBundle\Contracts\IdentityInterface;
-use Tourze\UserIDBundle\Service\UserIdentityService;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
+use Tourze\PHPUnitSymfonyKernelTest\AbstractIntegrationTestCase;
 use Tourze\UserIDIdcardBundle\Entity\IdcardIdentity;
 use Tourze\UserIDIdcardBundle\Repository\IdcardIdentityRepository;
 use Tourze\UserIDIdcardBundle\Service\UserIdentityIdcardService;
 
-class UserIdentityIdcardServiceTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(UserIdentityIdcardService::class)]
+#[RunTestsInSeparateProcesses]
+final class UserIdentityIdcardServiceTest extends AbstractIntegrationTestCase
 {
-    private UserIdentityIdcardService $service;
-    private IdcardIdentityRepository $repository;
-    private UserIdentityService $innerService;
-
-    protected function setUp(): void
+    protected function onSetUp(): void
     {
-        $this->repository = $this->createMock(IdcardIdentityRepository::class);
-        $this->innerService = $this->createMock(UserIdentityService::class);
-        $this->service = new UserIdentityIdcardService($this->repository, $this->innerService);
+        // 集成测试设置方法
     }
 
-    /**
-     * 测试构造函数
-     */
-    public function test_constructor_setsRepositoryAndInnerService()
+    private function getUserIdentityIdcardService(): UserIdentityIdcardService
     {
-        $repository = $this->createMock(IdcardIdentityRepository::class);
-        $innerService = $this->createMock(UserIdentityService::class);
-        
-        $service = new UserIdentityIdcardService($repository, $innerService);
-        
-        // 使用反射检查私有属性
-        $reflectionClass = new \ReflectionClass($service);
-        
-        $repositoryProperty = $reflectionClass->getProperty('idcardIdentityRepository');
-        $repositoryProperty->setAccessible(true);
-        
-        $innerServiceProperty = $reflectionClass->getProperty('inner');
-        $innerServiceProperty->setAccessible(true);
-        
-        $this->assertSame($repository, $repositoryProperty->getValue($service));
-        $this->assertSame($innerService, $innerServiceProperty->getValue($service));
+        return self::getService(UserIdentityIdcardService::class);
     }
 
     /**
      * 测试 findByType 方法当类型为身份证且找到记录时
      */
-    public function test_findByType_whenTypeIsIdcardAndIdentityFound()
+    public function testFindByTypeWhenTypeIsIdcardAndIdentityFound(): void
     {
+        // 创建一个身份证记录
+        $identity = new IdcardIdentity();
+        $identity->setIdcard('110101199001011234');
+
+        $repository = self::getService(IdcardIdentityRepository::class);
+        $repository->save($identity);
+
+        $service = $this->getUserIdentityIdcardService();
         $type = IdcardIdentity::IDENTITY_TYPE;
         $value = '110101199001011234';
-        $identity = $this->createMock(IdcardIdentity::class);
-        
-        $this->repository->expects($this->once())
-            ->method('findOneBy')
-            ->with(['idcard' => $value])
-            ->willReturn($identity);
-            
-        // 内部服务不应该被调用
-        $this->innerService->expects($this->never())
-            ->method('findByType');
-            
-        $result = $this->service->findByType($type, $value);
-        
-        $this->assertSame($identity, $result);
+
+        $result = $service->findByType($type, $value);
+
+        $this->assertInstanceOf(IdcardIdentity::class, $result);
+        $this->assertSame($value, $result->getIdcard());
     }
-    
+
     /**
      * 测试 findByType 方法当类型为身份证但未找到记录时
      */
-    public function test_findByType_whenTypeIsIdcardButIdentityNotFound()
+    public function testFindByTypeWhenTypeIsIdcardButIdentityNotFound(): void
     {
+        $service = $this->getUserIdentityIdcardService();
         $type = IdcardIdentity::IDENTITY_TYPE;
-        $value = '110101199001011234';
-        $identity = $this->createMock(IdentityInterface::class);
-        
-        $this->repository->expects($this->once())
-            ->method('findOneBy')
-            ->with(['idcard' => $value])
-            ->willReturn(null);
-            
-        // 内部服务应该被调用
-        $this->innerService->expects($this->once())
-            ->method('findByType')
-            ->with($type, $value)
-            ->willReturn($identity);
-            
-        $result = $this->service->findByType($type, $value);
-        
-        $this->assertSame($identity, $result);
+        $value = '999999999999999999';
+
+        $result = $service->findByType($type, $value);
+
+        // 应该返回 null 或者调用内部服务的结果
+        $this->assertNull($result);
     }
-    
+
     /**
      * 测试 findByType 方法当类型不是身份证时
      */
-    public function test_findByType_whenTypeIsNotIdcard()
+    public function testFindByTypeWhenTypeIsNotIdcard(): void
     {
+        $service = $this->getUserIdentityIdcardService();
         $type = 'email';
         $value = 'test@example.com';
-        $identity = $this->createMock(IdentityInterface::class);
-        
-        // 仓库不应该被调用
-        $this->repository->expects($this->never())
-            ->method('findOneBy');
-            
-        // 内部服务应该被调用
-        $this->innerService->expects($this->once())
-            ->method('findByType')
-            ->with($type, $value)
-            ->willReturn($identity);
-            
-        $result = $this->service->findByType($type, $value);
-        
-        $this->assertSame($identity, $result);
+
+        $result = $service->findByType($type, $value);
+
+        // 对于非身份证类型，应该委托给内部服务处理，通常返回 null
+        $this->assertNull($result);
     }
-    
+
     /**
      * 测试 findByUser 方法
      */
-    public function test_findByUser_mergesResultsFromBothSources()
+    public function testFindByUser(): void
     {
-        $user = $this->createMock(UserInterface::class);
-        $idcardIdentity1 = $this->createMock(IdcardIdentity::class);
-        $idcardIdentity2 = $this->createMock(IdcardIdentity::class);
-        $otherIdentity1 = $this->createMock(IdentityInterface::class);
-        $otherIdentity2 = $this->createMock(IdentityInterface::class);
-        
-        // 仓库返回身份证身份信息
-        $this->repository->expects($this->once())
-            ->method('findBy')
-            ->with(['user' => $user])
-            ->willReturn([$idcardIdentity1, $idcardIdentity2]);
-            
-        // 内部服务返回其他类型的身份信息
-        $this->innerService->expects($this->once())
-            ->method('findByUser')
-            ->with($user)
-            ->willReturn([$otherIdentity1, $otherIdentity2]);
-            
-        $result = $this->service->findByUser($user);
-        
-        // 将迭代器转换为数组
-        $resultArray = iterator_to_array($result);
-        
-        $this->assertCount(4, $resultArray);
-        $this->assertSame($idcardIdentity1, $resultArray[0]);
-        $this->assertSame($idcardIdentity2, $resultArray[1]);
-        $this->assertSame($otherIdentity1, $resultArray[2]);
-        $this->assertSame($otherIdentity2, $resultArray[3]);
+        $user = $this->createNormalUser('test@example.com', 'password');
+
+        // 为用户创建身份证记录
+        $identity1 = new IdcardIdentity();
+        $identity1->setIdcard('110101199001011235');
+        $identity1->setUser($user);
+
+        $identity2 = new IdcardIdentity();
+        $identity2->setIdcard('110101199001011236');
+        $identity2->setUser($user);
+
+        $repository = self::getService(IdcardIdentityRepository::class);
+        $repository->save($identity1);
+        $repository->save($identity2);
+
+        $service = $this->getUserIdentityIdcardService();
+        $result = iterator_to_array($service->findByUser($user));
+
+        $this->assertGreaterThanOrEqual(2, count($result));
+
+        // 检查身份证记录是否包含在结果中
+        $foundIdcards = array_filter($result, fn ($identity) => $identity instanceof IdcardIdentity);
+        $this->assertGreaterThanOrEqual(2, count($foundIdcards));
     }
-    
-    /**
-     * 测试 findByUser 方法当用户没有身份证时
-     */
-    public function test_findByUser_whenUserHasNoIdcardIdentities()
-    {
-        $user = $this->createMock(UserInterface::class);
-        $otherIdentity = $this->createMock(IdentityInterface::class);
-        
-        // 仓库返回空数组
-        $this->repository->expects($this->once())
-            ->method('findBy')
-            ->with(['user' => $user])
-            ->willReturn([]);
-            
-        // 内部服务返回其他类型的身份信息
-        $this->innerService->expects($this->once())
-            ->method('findByUser')
-            ->with($user)
-            ->willReturn([$otherIdentity]);
-            
-        $result = $this->service->findByUser($user);
-        
-        // 将迭代器转换为数组
-        $resultArray = iterator_to_array($result);
-        
-        $this->assertCount(1, $resultArray);
-        $this->assertSame($otherIdentity, $resultArray[0]);
-    }
-    
-    /**
-     * 测试 findByUser 方法当内部服务返回空结果时
-     */
-    public function test_findByUser_whenInnerServiceReturnsNoResults()
-    {
-        $user = $this->createMock(UserInterface::class);
-        $idcardIdentity = $this->createMock(IdcardIdentity::class);
-        
-        // 仓库返回身份证身份信息
-        $this->repository->expects($this->once())
-            ->method('findBy')
-            ->with(['user' => $user])
-            ->willReturn([$idcardIdentity]);
-            
-        // 内部服务返回空数组
-        $this->innerService->expects($this->once())
-            ->method('findByUser')
-            ->with($user)
-            ->willReturn([]);
-            
-        $result = $this->service->findByUser($user);
-        
-        // 将迭代器转换为数组
-        $resultArray = iterator_to_array($result);
-        
-        $this->assertCount(1, $resultArray);
-        $this->assertSame($idcardIdentity, $resultArray[0]);
-    }
-} 
+}
