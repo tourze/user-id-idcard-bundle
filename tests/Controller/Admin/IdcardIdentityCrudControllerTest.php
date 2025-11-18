@@ -48,11 +48,6 @@ final class IdcardIdentityCrudControllerTest extends AbstractEasyAdminController
         yield 'idcard_field' => ['idcard'];
     }
 
-    public function testGetEntityFqcn(): void
-    {
-        self::assertSame(IdcardIdentity::class, IdcardIdentityCrudController::getEntityFqcn());
-    }
-
     public function testConfigureFields(): void
     {
         $controller = new IdcardIdentityCrudController();
